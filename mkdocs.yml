@@ -1,0 +1,49 @@
+site_name: Workflow Documentation
+dev_addr: '127.0.0.1:8005'
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.top  # back to top button
+    - search.highlight
+nav:
+  - Home: index.md
+  # Here define structure of the documentation
+
+repo_url: https://github.com/cuspuk/pantheon_documentation
+repo_name: <b>documentation</b><sup>VERSION</sup> # TBA
+
+markdown_extensions:
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: True
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+  - table-reader
