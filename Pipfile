@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 mkdocs-material = "*"
 mkdocstrings = "*"
+mkdocs-table-reader-plugin = "*"
 
 [dev-packages]
 
