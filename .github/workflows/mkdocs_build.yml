@@ -20,6 +20,7 @@ jobs:
         with:
           key: ${{ github.ref }}
           path: .cache
+      - run: pip install pipenv
       - run: pipenv shell
       - run: pipenv sync
       - run: mkdocs gh-deploy --force
