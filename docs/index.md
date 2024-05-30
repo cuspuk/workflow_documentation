@@ -16,12 +16,13 @@ With running `mamba` (or `conda`), create a new environment with required
 dependencies:
 
 ```sh
-mamba create -c conda-forge -c bioconda --name snakemake python=3.11 snakemake=7.25 peppy snakemake-wrapper-utils
+mamba create -c conda-forge -c bioconda --name snakemake_v7_25 python=3.11 snakemake=7.25 peppy snakemake-wrapper-utils
 ```
 
-!!! warning
-    Although there are more recent Snakemake versions, they are not fully backwards
-    compatible, so for now, we use the slightly older Snakemake 7.25
+!!! note
+    Snakemake version should be frozen to a specific version to prevent any
+    dependency problems. Furthermore, this should be set for each workflow
+    separately, so the development of one workflow is independent.
 
 ## Snakemake basics
 
@@ -30,9 +31,13 @@ functionality. The comprehensive documentation is provided in the following
 site:
 [https://snakemake.readthedocs.io/en/v7.25.0/](https://snakemake.readthedocs.io/en/v7.25.0/).
 
+!!! warning
+    Try to refer only to the documentation of the Snakemake version you declare to
+    use, as some features or their usage can change among versions.
+
 ## Workflow structure
 
-The workflow file structure usually looks like this:
+The recommended file structure:
 
 ```bash
 ├── config
@@ -40,36 +45,119 @@ The workflow file structure usually looks like this:
 │   └── pep/
 │       ├── config.yaml
 │       └── samples.csv
-├── resources/
-└── workflow/
-├── scripts/
-├── envs/
-│   └── bwa.yaml
-├── report/
-│   └── template.rst
-├── rules/
-│   ├── common.smk
-│   └── mapping.smk
-├── schemas/
-│   ├── config.schema.yaml
-│   └── samples.schema.yaml
-└── Snakefile
+├── results/
+│   └── workflow/
+│   ├── scripts/
+│   ├── envs/
+│   │   └── {...}.yaml
+│   ├── report/
+│   │   └── {...}.rst
+│   ├── rules/
+│   │   ├── common.smk
+│   │   └── {...}.smk
+│   ├── schemas/
+│   │   ├── config.schema.yaml
+│   │   └── samples.schema.yaml
+│   └── Snakefile
 ```
+
+!!! note
+    When creating a new workflow repository, tt is recommended to use
+    [github template](https://github.com/cuspuk/workflow_template). Follow the
+    README of the template.
+
+There are 3 main directories:
+
+- `results` - here should be created all workflow-specific outputs.
+- `config` - here should be defined the configuration for workflow-specific
+  parameters and inputs.
+- `workflow` - here should be defined everything related to the workflow logic.
+
+### `config/`
+
+Workflow should be configurable, i.e. the user should be provided with the
+possibility to fine-tune the tools in the workflow. Snakemake recommends using a
+file in YAML format. This file should also offer possibility to provide external
+inputs, such as reference genome or various biological databases. At last, there
+should be also configuration for resources, such as number of threads or size of
+memory to be used.
+
+!!! note
+    Snakemake expects the configuration in `config/config.yaml`, so it will be
+    loaded automatically. However, when running snakemake, you can modify this by
+    using `--configfile {custom_path}`.
+
+In this directory there should be configuration of inputs for the workflow.
+Snakemake recommends using CSV file to allow user to provide inputs with its
+attributes. Configuration of attributes should be defined in YAML format.
 
 ### `workflow/`
 
-This folder contains the main functionality of the workflow. The entrypoint for
-the Snakemake is the `Snakefile` file, which should either contain all rules
-(not a good practice) or include the additional rule files, housed in the
-`rules/` folder. Usually, the Snakefile contains `rule all` which specifies all
-outputs the workflow should return.
+The entrypoint for the Snakemake is the `Snakefile` file, which defines exactly
+one rule which is by default the **target rule**. This rule should be named
+`all` by convention and should request the final outputs of the workflow as
+inputs. Other Snakemake rules or Python code should not be defined here, but
+only included.
 
-#### `rules/`
+!!! note
+    It is expected of the entrypoint to be named as `Snakefile` as snakemake expects
+    the entrypoint in `workflow/Snakefile`.
 
-Files with specific Snakemake rules go to this folder. The granularity is up to
-the user, there can be individual file for each rule, they can be grouped
-together according to some common characteristic, or all rules can be defined in
-one file, but this is not recommended, especially in large workflows.
+Other workflow logic should be put in the subdirectory `rules/`, Python code for
+reading configuration and other auxiliary functions should be by convention put
+into `common.smk`, whereas pure Snakemake rules should be put into other `*.smk`
+files, balancing cohesion and readability of individual `.smk` files.
+
+!!! warning
+    In `Snakefile` you should first include `common.smk`, then other rules in
+    `.smk`, and at last define the `all` rule.
+
+Rules should be written to represent high-level abstraction view of mappings
+between inputs and outputs, thus only the simplest processing logic should be
+defined directly in rule (i.e. readable bash one-liners like using `cat` for
+multiple inputs). Processing logic should be abstracted away, either using
+`wrapper` directive for external modular scripts, or `script` directive for
+internal scripts. Internal scripts should be put into `scripts/` subdirectory.
+
+!!! note
+    When the script is called via Snakemake, a `snakemake` object is made available
+    in the script, storing all input and output paths, parameters, threads, and
+
+other arguments passed to the specific rule. See
+[the documentation for specific languages.](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/rules.html#external-scripts)
+
+!!! warning
+    Snakemake files are not included automatically, but must be defined to be
+    included.
+
+Other stuff that should be defined in `workflow/` directory are conda
+environments, report templates and validation schemas. Conda environments should
+be put in `envs/` subdirectory, and they should be defined as specific as
+possible, and they should not contain anything else in addition to the
+dependencies required by the rule. Even in the case, where one rule has
+dependencies that are subset of the other rule, environments should still be
+defined separately to prevent any conflicts.
+
+If you use `report` directive for outputs in Snakemake rules, you can provide
+custom report templates. These templates should be stored in the `report/`
+subdirectory.
+
+Configuration for the workflow should be validated, so workflow should not fail
+due to misconfiguration halfway execution. To validate configuration, it is
+recommended to use validation schemas, that should be defined in `schemas/`
+subdirectory. Currently, Snakemake allows JSON or YAML format conforming to the
+[JSON schema specification](https://json-schema.org/specification). Input
+configuration should be validated as well, e.g. to ensure that required
+attributes of inputs have been provided.
+
+!!! tip
+    In validation schema, you can supply default values or advanced validation such
+    as minimum values, enumeration and so on.
+
+!!! note
+    Stricter validation means earlier feedback to the user.
+
+## Rules
 
 It is a good idea to create one file for common operations (in the file
 structure above, it is the `common.smk` file), such as loading paths, extracting
@@ -81,30 +169,8 @@ can be freely used in the function.
 
 The specifics of writing the rules are available in the
 [documentation](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/rules.html).
-It is, however, important to note that the rules are not automatically included
-in the `Snakefile`, so they must be added manually using the `include()`
-function.
 
-#### `scripts/`
-
-In the scripts folder are stored custom scripts used in the workflow. The
-scripts can be of any programming language, but Snakemake has a native support
-for Python, R, Rust, Julia and Bash scripts, and they can be called directly
-from the rule by replacing `shell` or `wrapper` parameter with `script`.
-
-When the script is called via Snakemake, a `snakemake` object is made available
-in the script, storing all input and output paths, parameters, threads, and
-other arguments passed to the specific rule. Each programming language has a
-slightly different syntax on how to access the arguments, so the examples are
-provided
-[here](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/rules.html#external-scripts).
-
-#### `envs/`
-
-This folder is used to define conda environments used by the rules. In this file
-structure above is one environment saved in _bwa.yml_, which probably contains
-the dependencies for running BWA. The environments are created automatically by
-conda and used in the required rule in the workflow.
+## Running
 
 Generally, Snakemake creates envs in the working directory, but this can lead to
 many duplicate environments across projects, so it is a good idea to use
@@ -118,49 +184,6 @@ rules, if they use the same tool.
 
 More information on the use of conda envs is available
 [here](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/deployment.html#integrated-package-management).
-
-### `config/`
-
-Configuration files with user-defined parameters. The user can change these
-parameters to fine-tune the tools in the workflow. It should also contain paths
-to reference genome and various databases, so they are defined only once and
-therefore it's very unlikely that the user will accidentally supply a path to
-another reference or incorrect database.
-
-`config.yaml` is the main configuration file with all custom parameters for
-tools in the workflow. Besides parameters and database paths, user can also use
-the config file for specifying how much memory and how many cores each rule can
-use.
-
-Note that the parameters are not loaded automatically, they need to be parsed
-and supplied to the rules in the format the tool expects them to be. The good
-place for parsing functions is in the `common.smk` file.
-
-The pep folder contains the list of samples in the `samples.csv` file and the
-configuration for each column in `pep/config.yaml`. Besides paths to input
-files, the CSV file can contain additional columns (if they are specified in the
-config) with additional data. This data can be then extracted from the `pep`
-object during runtime.
-
-### `schemas/`
-
-The workflow may require many parameters to be specified, but majority of them
-can be set to default value or completely omitted. It also often requires some
-mandatory parameters, that need to be supplied by the user, or the tool won't
-start. To ensure all required parameters are filled-in and all parameters in the
-config file are in the correct format, a schema can be used.
-
-The schema is used when the config is being loaded, to validate whether it
-conforms to the schema. When required parameters are not supplied, the
-validation fails, which prevents the workflow failing halfway execution.
-Additionally, the parameters can have default values, so if it is not present in
-the user-defined config, the default value is loaded from the schema.
-
-The schema can be in a JSON or YAML format conforming to the JSON schema
-specification. More information is available
-[here](https://json-schema.org/specification).
-
-## Running
 
 There are many arguments to use when running a snakemake workflow, see the
 [documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html).
