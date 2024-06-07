@@ -20,6 +20,10 @@ theme:
     - search.highlight
 nav:
   - Home: index.md
+  - Introduction: introduction.md
+  - Workflow structure: structure.md
+  - Running: running.md
+  - Development process: development.md
   # Here define structure of the documentation
 
 repo_url: https://github.com/cuspuk/pantheon_documentation
