@@ -1,5 +1,5 @@
 site_name: Workflow Documentation
-dev_addr: '127.0.0.1:8005'
+dev_addr: "127.0.0.1:8005"
 
 theme:
   name: material
@@ -16,10 +16,14 @@ theme:
         name: Switch to light mode
   features:
     - navigation.instant
-    - navigation.top  # back to top button
+    - navigation.top # back to top button
     - search.highlight
 nav:
   - Home: index.md
+  - Introduction: introduction.md
+  - Workflow structure: structure.md
+  - Running: running.md
+  - Development process: development.md
   # Here define structure of the documentation
 
 repo_url: https://github.com/cuspuk/pantheon_documentation
@@ -38,7 +42,7 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+          format: python/name:pymdownx.superfences.fence_code_format
   - admonition
   - pymdownx.details
   - attr_list
