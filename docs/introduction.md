@@ -1,4 +1,3 @@
-
 # Introduction
 
 Snakemake is a python package which needs to be installed prior running the
@@ -20,10 +19,11 @@ mamba create -c conda-forge -c bioconda --name snakemake_v7_25 python=3.11 \
 !!! note
     Snakemake version should be frozen to a specific version to prevent any
     dependency problems. Furthermore, this should be set for each workflow
-    separately, so the development of each workflow is independent from the
-    others.
+    separately, so the development of each workflow is independent from the others.
 
-Also you should distinguish between environment for workflow development and for users running the workflow. For example, users usually use only lite version of the environment, without things formatting or linting stuff.
+Also you should distinguish between environment for workflow development and for
+users running the workflow. For example, users usually use only lite version of
+the environment, without things formatting or linting stuff.
 
 ## Snakemake basics
 
@@ -35,5 +35,5 @@ functionality. The comprehensive documentation is already provided
     Try to refer only to the documentation of the Snakemake version you declare to
     use, as some features or their usage can change among versions.
 
-Now, that you prepared your conda environment, head to the [next section](structure.md)
-to know more about the workflow code structure.
+Now, that you prepared your conda environment, head to the
+[next section](structure.md) to know more about the workflow code structure.

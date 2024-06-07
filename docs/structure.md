@@ -1,4 +1,3 @@
-
 # Workflow structure
 
 The recommended file structure:
@@ -39,12 +38,12 @@ There are 3 main directories:
 
 ## Config directory
 
-Workflow should be defined to be configurable, i.e. the user should be provided with the
-possibility to fine-tune the tools in the workflow. Snakemake recommends using a
-file in YAML format. This file should also offer possibility to provide external
-inputs, such as reference genome or various biological databases. At last, there
-should be also configuration for resources, such as number of threads or size of
-memory to be used.
+Workflow should be defined to be configurable, i.e. the user should be provided
+with the possibility to fine-tune the tools in the workflow. Snakemake
+recommends using a file in YAML format. This file should also offer possibility
+to provide external inputs, such as reference genome or various biological
+databases. At last, there should be also configuration for resources, such as
+number of threads or size of memory to be used.
 
 !!! note
     Snakemake expects the configuration in `config/config.yaml`, so it will be
@@ -55,7 +54,9 @@ In this directory there should be configuration of inputs for the workflow.
 Snakemake recommends using CSV file to allow user to provide inputs with its
 attributes. Configuration of attributes should be defined in YAML format.
 
-We advise to expose as much functionality as possible to the user. This decreases the chance that you, as a developer, will need to make potential future changes to the code, and to allow you to focus on adding new features.
+We advise to expose as much functionality as possible to the user. This
+decreases the chance that you, as a developer, will need to make potential
+future changes to the code, and to allow you to focus on adding new features.
 
 ## Workflow directory
 
@@ -77,8 +78,8 @@ into `common.smk`, whereas pure Snakemake rules should be put into other `*.smk`
 files, balancing cohesion and readability of individual `.smk` files.
 
 !!! warning
-    In `Snakefile` you should first include `common.smk`, then include other
-    rules in `.smk` files, and at last, directly define the `all` rule.
+    In `Snakefile` you should first include `common.smk`, then include other rules
+    in `.smk` files, and at last, directly define the `all` rule.
 
 Rules should be written to represent high-level abstraction view of mappings
 between inputs and outputs, thus, only the simplest processing logic should be
@@ -90,7 +91,8 @@ internal scripts. Internal scripts should be put into `scripts/` subdirectory.
 !!! note
     When the script is called via Snakemake, a `snakemake` object is made available
     in the script, storing all input and output paths, parameters, threads, and
-    other arguments passed to the specific rule. See [the documentation for specific languages.](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/rules.html#external-scripts)
+    other arguments passed to the specific rule. See
+    [the documentation for specific languages.](https://snakemake.readthedocs.io/en/v7.25.0/snakefiles/rules.html#external-scripts)
 
 !!! warning
     Snakemake files are not included automatically, but must be defined to be
